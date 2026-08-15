@@ -54,13 +54,38 @@ kunden får en booking-bekreftelse (ikke en betalingskvittering) på skjerm og e
 ## E-post
 
 Som standard skrives e-poster til terminalen (nyttig i utvikling) – både bookingbekreftelser og
-engangskodene for e-postverifisering. For ekte utsendelse via Gmail/Google Workspace:
+engangskodene for e-postverifisering.
 
-1. Slå på 2-trinnsbekreftelse på Google-kontoen dere skal sende fra
-   (`myaccount.google.com/security`), hvis den ikke allerede er på.
-2. Gå til `myaccount.google.com/apppasswords` og lag et app-passord for "Mail". Google gir deg
-   et 16-tegns passord – bruk **dette**, ikke det vanlige kontopassordet.
-3. Sett disse i `.env`:
+**Viktig:** `smtp.gmail.com` fungerer fint lokalt, men Google blokkerer/dropper ofte SMTP-
+tilkoblinger fra skyservere (Railway, AWS, GCP, DigitalOcean m.fl.) som anti-spam-tiltak – dette
+gir en treg, hengende forespørsel i ca. 30 sekunder og til slutt en generisk 500-feil i
+produksjon, selv med korrekt app-passord. **Bruk derfor Gmail kun til lokal utvikling, og en
+ordentlig transaksjonstjeneste i produksjon** (samme `EMAIL_*`-variabler, bare andre verdier –
+ingen kodeendring nødvendig):
+
+- **SendGrid** (anbefalt hvis dere ikke har eget domene ennå): gratis opptil 100 e-poster/dag.
+  Under **Settings → Sender Authentication → Verify a Single Sender**, verifiser Gmail-adressen
+  dere sender fra (ingen DNS/domene nødvendig – bare et bekreftelseslenke-klikk). Lag så en
+  API-nøkkel under **Settings → API Keys**, og sett:
+  ```
+  EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+  EMAIL_HOST=smtp.sendgrid.net
+  EMAIL_PORT=587
+  EMAIL_HOST_USER=apikey
+  EMAIL_HOST_PASSWORD=<SendGrid API-nøkkel>
+  EMAIL_USE_TLS=True
+  DEFAULT_FROM_EMAIL=Florø Detailing <den-verifiserte-adressen@gmail.com>
+  BUSINESS_NOTIFICATION_EMAIL=den-verifiserte-adressen@gmail.com
+  ```
+- **Resend** (hvis dere har/skaffer et domene): gratis opptil 3000 e-poster/mnd, men krever
+  domeneverifisering (noen DNS-oppføringer) for å sende til andre enn dere selv.
+
+### Lokal utvikling via Gmail (valgfritt)
+
+1. Slå på 2-trinnsbekreftelse på Google-kontoen (`myaccount.google.com/security`).
+2. Gå til `myaccount.google.com/apppasswords` og lag et app-passord for "Mail" (16 tegn – bruk
+   **dette**, ikke det vanlige kontopassordet).
+3. Sett i lokal `.env`:
    ```
    EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
    EMAIL_HOST=smtp.gmail.com
@@ -68,16 +93,8 @@ engangskodene for e-postverifisering. For ekte utsendelse via Gmail/Google Works
    EMAIL_HOST_USER=din-konto@gmail.com
    EMAIL_HOST_PASSWORD=<16-tegns app-passord>
    EMAIL_USE_TLS=True
-   DEFAULT_FROM_EMAIL=Florø Detailing <din-konto@gmail.com>
-   BUSINESS_NOTIFICATION_EMAIL=din-konto@gmail.com
    ```
-4. Restart serveren. Test ved å gå gjennom bookingflyten med en ekte e-postadresse – du skal få
-   både verifiseringskoden og (etter fullført booking) bekreftelsen i innboksen.
-
-Merk: en vanlig Gmail-konto har en utsendingsgrense (~500/dag) og kan i sjeldne tilfeller
-markere automatiske e-poster som spam ved høyt volum. Hvis dere vokser forbi noen få bookinger
-om dagen, er en transaksjonstjeneste (Resend, SendGrid, Mailgun o.l.) mer robust – samme
-`.env`-oppsett, bare med deres SMTP-verdier i stedet.
+4. Restart serveren og test bookingflyten med en ekte e-postadresse.
 
 ### E-postverifisering (engangskode)
 

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Om oss – Innvendig bilpleie – {{ site_settings.business_name }}{% endblock %}
+{% block content %}
+<section class="about-page">
+  <div class="container container-narrow">
+    <p class="eyebrow">Om oss</p>
+    <h1>Innvendig bilpleie</h1>
+    <p class="lede">
+      Hos {{ site_settings.business_name }} får bilen eit reint, friskt og velstelt interiør.
+      Vi tilbyr alt frå ei rask oppfrisking til grundig innvendig reins med maskin.
+    </p>
+
+    <div class="service-detail">
+      <div class="service-detail-header">
+        <h2>Lett innvendig vask</h2>
+        <span class="price">500 kr</span>
+      </div>
+      <p class="muted">Perfekt for deg som ønskjer ein rask oppfrisking av bilen.</p>
+      <p class="included-label">Dette er inkludert:</p>
+      <ul class="included-list">
+        <li>Støvsuging av golv og matter</li>
+        <li>Tørk av dashboard, midtkonsoll og panel</li>
+        <li>Reingjering av dørkarmer</li>
+        <li>Enkel oppfrisking av interiøret</li>
+      </ul>
+      <p class="fit-note"><strong>Passar for:</strong> Bil som er lett til moderat skitten.</p>
+      <a href="{% url 'booking:create' %}?service=lett-vask-innvendig" class="btn btn-accent">Book Lett innvendig vask</a>
+    </div>
+
+    <hr class="service-sep">
+
+    <div class="service-detail">
+      <div class="service-detail-header">
+        <h2>Grundig innvendig vask med maskin</h2>
+        <span class="price">750 kr</span>
+      </div>
+      <p class="muted">Ei meir omfattande innvendig behandling for deg som ønskjer eit skikkeleg reint resultat.</p>
+      <p class="included-label">Dette er inkludert:</p>
+      <ul class="included-list">
+        <li>Grundig støvsuging av heile bilen</li>
+        <li>Vask av dashboard, panel, dørtrekk og andre innvendige flater</li>
+        <li>Maskinreins av tekstilflater</li>
+        <li>Oppfrisking og shine av interiøret</li>
+      </ul>
+      <p class="fit-note"><strong>Passar for:</strong> Bil med flekkar, støv, sand eller generell slitasje innvendig.</p>
+      <a href="{% url 'booking:create' %}?service=grundigvask-innvendig-med-shine" class="btn btn-accent">Book Grundig innvendig vask</a>
+    </div>
+
+    <hr class="service-sep">
+
+    <div class="service-detail">
+      <div class="service-detail-header">
+        <h2>Reins av seter</h2>
+        <span class="price">75 kr per sete</span>
+      </div>
+      <p class="muted">Effektiv fjerning av flekkar og smuss frå tekstilseter ved hjelp av maskinreins.</p>
+      <p class="muted">Perfekt som tillegg til ei innvendig vask, eller dersom du berre ønskjer å friske opp enkelte seter.</p>
+      <a href="{% url 'booking:create' %}?service=rens-av-seter" class="btn btn-accent">Book Reins av seter</a>
+    </div>
+
+    <hr class="service-sep">
+
+    <div class="why-section">
+      <h2>Kvifor velje {{ site_settings.business_name }}?</h2>
+      <ul class="why-list">
+        <li>Grundig støvsuging</li>
+        <li>Reine dashboard og panel</li>
+        <li>Friskt og velduftande interiør</li>
+        <li>Fokus på detaljar og kvalitet</li>
+      </ul>
+    </div>
+
+    <div class="about-cta">
+      <p class="lede">Bestill time i dag og få bilen rein, fresh og klar til neste tur.</p>
+      <a href="{% url 'booking:create' %}" class="btn btn-accent btn-large">Book time nå</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

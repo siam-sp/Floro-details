@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Booking – {{ site_settings.business_name }}{% endblock %}
+{% block content %}
+<section class="booking-page">
+  <div class="container container-narrow center">
+    {% if booking.status == "confirmed" %}
+      <div class="status-badge status-ok">✓ Bekreftet</div>
+      <h1>Takk, {{ booking.customer_name }}!</h1>
+      <p class="lede">Timen din er booket. Du betaler på stedet når bilen er ferdig.</p>
+    {% elif booking.status == "completed" %}
+      <div class="status-badge status-ok">✓ Fullført</div>
+      <h1>Takk, {{ booking.customer_name }}!</h1>
+      <p class="lede">Denne timen er gjennomført.</p>
+    {% else %}
+      <div class="status-badge status-cancelled">Kansellert</div>
+      <h1>Bookingen ble ikke fullført</h1>
+      <p class="lede">Ta gjerne kontakt med oss hvis dette var uventet.</p>
+    {% endif %}
+
+    <div class="summary-card">
+      <div class="summary-row"><span>Tjeneste</span><strong>{{ booking.service.name }}</strong></div>
+      <div class="summary-row"><span>Dato</span><strong>{{ booking.date|date:"d.m.Y" }}</strong></div>
+      <div class="summary-row"><span>Tid</span><strong>{{ booking.start_time|time:"H:i" }}–{{ booking.end_time|time:"H:i" }}</strong></div>
+      <div class="summary-row"><span>Å betale på stedet</span><strong>{{ booking.service.price_kr }} kr</strong></div>
+      <div class="summary-row"><span>Referanse</span><strong>{{ booking.reference }}</strong></div>
+    </div>
+
+    <p class="muted">Spørsmål? Ring oss på <a href="tel:{{ site_settings.phone|cut:' ' }}">{{ site_settings.phone }}</a>.</p>
+    <a href="{% url 'booking:home' %}" class="btn btn-ghost">Til forsiden</a>
+  </div>
+</section>
+{% endblock %}

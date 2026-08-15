@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <p class="eyebrow">Florø · Bilvask &amp; Detailing</p>
+    <h1>{{ site_settings.hero_heading }}</h1>
+    <p class="lede">{{ site_settings.hero_subheading }}</p>
+    <div class="hero-actions">
+      <a href="{% url 'booking:create' %}" class="btn btn-accent btn-large">Book time nå</a>
+      <a href="tel:{{ site_settings.phone|cut:' ' }}" class="btn btn-ghost btn-large">Ring {{ site_settings.phone }}</a>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works">
+  <div class="container">
+    <ol class="steps">
+      <li>
+        <span class="step-num">1</span>
+        <h3>Velg tjeneste</h3>
+        <p class="muted">Se hva vi tilbyr og velg det som passer bilen din.</p>
+      </li>
+      <li>
+        <span class="step-num">2</span>
+        <h3>Velg tid</h3>
+        <p class="muted">Plukk en ledig dato og tid som passer deg.</p>
+      </li>
+      <li>
+        <span class="step-num">3</span>
+        <h3>Betal på stedet</h3>
+        <p class="muted">Timen er bekreftet med det samme – du betaler først når bilen er ferdig.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="services" id="tjenester">
+  <div class="container">
+    <h2>Tjenester</h2>
+    <div class="service-grid">
+      {% for service in services %}
+        <div class="service-card">
+          <h3>{{ service.name }}</h3>
+          {% if service.description %}<p class="muted">{{ service.description }}</p>{% endif %}
+          <div class="service-meta">
+            <span class="price">{{ service.price_kr }} kr</span>
+            <span class="muted">~{{ service.duration_minutes }} min</span>
+          </div>
+          <a href="{% url 'booking:create' %}?service={{ service.slug }}" class="btn btn-accent btn-block">Book {{ service.name }}</a>
+        </div>
+      {% empty %}
+        <p class="muted">Ingen tjenester tilgjengelig for øyeblikket.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="about" id="om-oss">
+  <div class="container about-inner">
+    <h2>Om oss</h2>
+    <p>{{ site_settings.about_text }}</p>
+    <a href="{% url 'booking:about' %}" class="btn btn-ghost">Les mer om innvendig bilpleie →</a>
+  </div>
+</section>
+{% endblock %}

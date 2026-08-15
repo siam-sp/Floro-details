@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Book time – {{ site_settings.business_name }}{% endblock %}
+{% block content %}
+<section class="booking-page">
+  <div class="container container-narrow">
+    <p class="eyebrow">Book online</p>
+    <h1>Book time</h1>
+
+    <div class="wizard-progress" id="wizard-progress">
+      <div class="progress-step" data-step="1"><span class="progress-circle">1</span></div>
+      <div class="progress-line"></div>
+      <div class="progress-step" data-step="2"><span class="progress-circle">2</span></div>
+      <div class="progress-line"></div>
+      <div class="progress-step" data-step="3"><span class="progress-circle">3</span></div>
+      <div class="progress-line"></div>
+      <div class="progress-step" data-step="4"><span class="progress-circle">4</span></div>
+    </div>
+
+    <form method="post" id="booking-form" novalidate>
+      {% csrf_token %}
+      {{ form.service }}
+      {{ form.date }}
+      {{ form.start_time }}
+
+      <div class="wizard-panel" data-panel="1">
+        <h2>Velg tjeneste</h2>
+        <div class="service-select" id="service-select">
+          {% for s in services %}
+            <label class="service-option{% if s == preselected_service %} selected{% endif %}">
+              <input
+                type="radio"
+                name="service_choice"
+                value="{{ s.pk }}"
+                data-slug="{{ s.slug }}"
+                data-name="{{ s.name }}"
+                data-price="{{ s.price_kr }}"
+                {% if s == preselected_service %}checked{% endif %}
+              >
+              <span class="service-option-name">{{ s.name }}</span>
+              <span class="service-option-price">{{ s.price_kr }} kr · ~{{ s.duration_minutes }} min</span>
+            </label>
+          {% empty %}
+            <p class="muted">Ingen tjenester tilgjengelig for øyeblikket.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="2">
+        <h2>Velg dato</h2>
+        <div class="date-scroller" id="date-scroller">
+          {% for d in days %}
+            <button
+              type="button"
+              class="date-chip{% if not d.bookable %} disabled{% endif %}"
+              data-date="{{ d.iso }}"
+              {% if not d.bookable %}disabled{% endif %}
+            >
+              <span class="date-chip-weekday">{{ d.weekday }}.</span>
+              <span class="date-chip-day">{{ d.day }}</span>
+              <span class="date-chip-month">{{ d.month }}</span>
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="3">
+        <h2>Velg tid</h2>
+        <div id="slots" class="slots-grid">
+          <p class="muted" id="slots-message">Velg en dato for å se ledige tider.</p>
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="4">
+        <h2>Dine opplysninger</h2>
+        <div class="summary-card" id="booking-summary"></div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="{{ form.customer_name.id_for_label }}">Navn</label>
+            {{ form.customer_name }}
+            {{ form.customer_name.errors }}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.customer_phone.id_for_label }}">Telefon</label>
+            {{ form.customer_phone }}
+            {{ form.customer_phone.errors }}
+          </div>
+          <div class="form-field form-field-wide">
+            <label for="{{ form.customer_email.id_for_label }}">E-post</label>
+            <div class="email-verify-row">
+              {{ form.customer_email }}
+              <button type="button" class="btn btn-ghost btn-small" id="send-code-btn">Send kode</button>
+            </div>
+            {{ form.customer_email.errors }}
+            <div class="verify-code-row" id="verify-code-row" hidden>
+              <input type="text" class="input" id="verify-code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-sifret kode">
+              <button type="button" class="btn btn-accent btn-small" id="verify-code-btn">Bekreft</button>
+            </div>
+            <p class="verify-message" id="verify-message"></p>
+          </div>
+          <div class="form-field form-field-wide">
+            <label for="{{ form.notes.id_for_label }}">Merknad (valgfritt)</label>
+            {{ form.notes }}
+          </div>
+        </div>
+
+        <p class="muted small">Betaling skjer på stedet – ingen forhåndsbetaling er nødvendig.</p>
+      </div>
+
+      {% if form.non_field_errors %}
+        <p class="form-error">{{ form.non_field_errors.0 }}</p>
+      {% endif %}
+      {% if form.date.errors or form.start_time.errors or form.service.errors %}
+        <p class="form-error">Velg tjeneste, dato og tid på nytt.</p>
+      {% endif %}
+
+      <div class="wizard-nav">
+        <button type="button" class="btn btn-ghost" id="wizard-back">← Tilbake</button>
+        <button type="button" class="btn btn-accent" id="wizard-next">Videre</button>
+        <button type="submit" class="btn btn-accent" id="wizard-submit" hidden>Bekreft booking</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/booking.js' %}"></script>
+{% endblock %}

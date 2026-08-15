@@ -126,6 +126,10 @@ EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+# Without this, a blocked/unreachable SMTP host hangs until Gunicorn's worker
+# timeout kills the process - fail fast instead so the customer gets a clean
+# error message rather than the request crashing.
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=10)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Florø Detailing <noreply@florodetailing.no>")
 BUSINESS_NOTIFICATION_EMAIL = env("BUSINESS_NOTIFICATION_EMAIL", default="")
 

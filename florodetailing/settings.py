@@ -118,18 +118,31 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Email
-EMAIL_BACKEND = env(
-    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
-)
-EMAIL_HOST = env("EMAIL_HOST", default="")
-EMAIL_PORT = env.int("EMAIL_PORT", default=587)
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-# Without this, a blocked/unreachable SMTP host hangs until Gunicorn's worker
-# timeout kills the process - fail fast instead so the customer gets a clean
-# error message rather than the request crashing.
-EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=10)
+#
+# Many PaaS hosts (Railway included) block or silently drop outbound SMTP
+# connections (port 25/465/587) as an anti-spam measure, regardless of the
+# destination host - this breaks Django's built-in SMTP EmailBackend even
+# with correct credentials, hanging until Gunicorn's worker timeout kills the
+# request. To send reliably from production, set SENDGRID_API_KEY below,
+# which switches to SendGrid's HTTPS API (booking.email_backends) instead of
+# SMTP - plain HTTPS traffic isn't blocked the way SMTP ports are.
+SENDGRID_API_KEY = env("SENDGRID_API_KEY", default="")
+if SENDGRID_API_KEY:
+    EMAIL_BACKEND = "booking.email_backends.SendGridAPIBackend"
+else:
+    EMAIL_BACKEND = env(
+        "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+    )
+    EMAIL_HOST = env("EMAIL_HOST", default="")
+    EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+    # Without this, a blocked/unreachable SMTP host hangs until Gunicorn's
+    # worker timeout kills the process - fail fast instead so the customer
+    # gets a clean error message rather than the request crashing.
+    EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=10)
+
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Florø Detailing <noreply@florodetailing.no>")
 BUSINESS_NOTIFICATION_EMAIL = env("BUSINESS_NOTIFICATION_EMAIL", default="")
 

@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 
 from .models import Booking, BusinessHours, ClosedDate, EmailVerification, Service, SiteSettings
 
@@ -63,12 +65,19 @@ class BookingAdmin(admin.ModelAdmin):
         "service",
         "status",
         "customer_phone",
+        "created_at",
+        "confirmation_link",
     )
     list_filter = ("status", "service", "date")
     search_fields = ("customer_name", "customer_phone", "customer_email", "reference")
     date_hierarchy = "date"
     readonly_fields = ("reference", "created_at", "updated_at")
     ordering = ("-date", "-start_time")
+
+    @admin.display(description="Bekreftelsesside")
+    def confirmation_link(self, obj):
+        url = reverse("booking:confirmation", args=[obj.reference])
+        return format_html('<a href="{}" target="_blank">Åpne ↗</a>', url)
 
 
 @admin.register(EmailVerification)

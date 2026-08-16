@@ -56,31 +56,34 @@ kunden får en booking-bekreftelse (ikke en betalingskvittering) på skjerm og e
 Som standard skrives e-poster til terminalen (nyttig i utvikling) – både bookingbekreftelser og
 engangskodene for e-postverifisering.
 
-**Viktig:** `smtp.gmail.com` fungerer fint lokalt, men Google blokkerer/dropper ofte SMTP-
-tilkoblinger fra skyservere (Railway, AWS, GCP, DigitalOcean m.fl.) som anti-spam-tiltak – dette
-gir en treg, hengende forespørsel i ca. 30 sekunder og til slutt en generisk 500-feil i
-produksjon, selv med korrekt app-passord. **Bruk derfor Gmail kun til lokal utvikling, og en
-ordentlig transaksjonstjeneste i produksjon** (samme `EMAIL_*`-variabler, bare andre verdier –
-ingen kodeendring nødvendig):
+**Viktig:** Railway (som de fleste PaaS-verter) blokkerer/dropper utgående SMTP-tilkoblinger
+(port 25/465/587) som anti-spam-tiltak, uansett hvilken SMTP-server dere prøver å sende
+gjennom (Gmail, SendGrid sin SMTP osv.) – dette gir en hengende forespørsel i ca. 30 sekunder
+og til slutt en 500-feil i produksjon, selv med korrekte innloggingsopplysninger. **Derfor
+sender appen via SendGrid sitt HTTPS API i stedet for SMTP** når `SENDGRID_API_KEY` er satt
+(ren HTTPS-trafikk blokkeres ikke slik SMTP-porter blir) – se `booking/email_backends.py`.
 
-- **SendGrid** (anbefalt hvis dere ikke har eget domene ennå): gratis opptil 100 e-poster/dag.
-  Under **Settings → Sender Authentication → Verify a Single Sender**, verifiser Gmail-adressen
-  dere sender fra (ingen DNS/domene nødvendig – bare et bekreftelseslenke-klikk). Lag så en
-  API-nøkkel under **Settings → API Keys**, og sett:
-  ```
-  EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-  EMAIL_HOST=smtp.sendgrid.net
-  EMAIL_PORT=587
-  EMAIL_HOST_USER=apikey
-  EMAIL_HOST_PASSWORD=<SendGrid API-nøkkel>
-  EMAIL_USE_TLS=True
-  DEFAULT_FROM_EMAIL=Florø Detailing <den-verifiserte-adressen@gmail.com>
-  BUSINESS_NOTIFICATION_EMAIL=den-verifiserte-adressen@gmail.com
-  ```
-- **Resend** (hvis dere har/skaffer et domene): gratis opptil 3000 e-poster/mnd, men krever
-  domeneverifisering (noen DNS-oppføringer) for å sende til andre enn dere selv.
+### Produksjon (Railway m.fl.): SendGrid via API
 
-### Lokal utvikling via Gmail (valgfritt)
+1. Opprett gratis konto på [sendgrid.com](https://sendgrid.com) (100 e-poster/dag gratis).
+2. **Settings → Sender Authentication → Verify a Single Sender** – verifiser adressen dere
+   sender fra (f.eks. Gmail-adressen deres; ingen domene/DNS nødvendig, bare et
+   bekreftelseslenke-klikk).
+3. **Settings → API Keys → Create API Key** (Full Access er greit) – kopier nøkkelen med det
+   samme, den vises kun én gang.
+4. Sett i `.env`/Railway-variablene:
+   ```
+   SENDGRID_API_KEY=<SendGrid API-nøkkel>
+   DEFAULT_FROM_EMAIL=Florø Detailing <den-verifiserte-adressen@gmail.com>
+   BUSINESS_NOTIFICATION_EMAIL=den-verifiserte-adressen@gmail.com
+   ```
+   (Så snart `SENDGRID_API_KEY` er satt, overstyrer den alle `EMAIL_HOST`/`EMAIL_*`-SMTP-
+   variabler automatisk – de trenger ikke fjernes, de blir bare ignorert.)
+
+### Lokal utvikling
+
+Lokalt fungerer vanlig Gmail SMTP fint (det er bare fra skyservere Google blokkerer det), så
+dere trenger ikke SendGrid for å teste lokalt:
 
 1. Slå på 2-trinnsbekreftelse på Google-kontoen (`myaccount.google.com/security`).
 2. Gå til `myaccount.google.com/apppasswords` og lag et app-passord for "Mail" (16 tegn – bruk
@@ -95,6 +98,9 @@ ingen kodeendring nødvendig):
    EMAIL_USE_TLS=True
    ```
 4. Restart serveren og test bookingflyten med en ekte e-postadresse.
+
+(Har dere satt `SENDGRID_API_KEY` lokalt også, brukes den i stedet – fjern den fra lokal `.env`
+hvis dere vil teste SMTP-veien lokalt.)
 
 ### E-postverifisering (engangskode)
 
@@ -131,23 +137,21 @@ Før dere går live (gjøres automatisk av `Procfile` på Railway): `python mana
    `requirements.txt`.
 3. Legg til en database: **+ New** → **Database** → **Add PostgreSQL** i samme prosjekt.
    Railway setter `DATABASE_URL` automatisk på web-tjenesten – ingenting å konfigurere.
-4. Åpne web-tjenesten → **Variables** og sett minst:
+4. Under **Settings → Networking**, trykk **Generate Domain** for å få en offentlig URL
+   (f.eks. `florodetailing.up.railway.app`).
+5. Åpne web-tjenesten → **Variables** og sett minst:
    ```
    SECRET_KEY=<en lang, tilfeldig streng - ikke gjenbruk dev-verdien>
    DEBUG=False
-   EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_HOST_USER=din-konto@gmail.com
-   EMAIL_HOST_PASSWORD=<gmail app-passord>
-   EMAIL_USE_TLS=True
-   DEFAULT_FROM_EMAIL=Florø Detailing <din-konto@gmail.com>
-   BUSINESS_NOTIFICATION_EMAIL=din-konto@gmail.com
+   ALLOWED_HOSTS=<domenet fra forrige steg, f.eks. florodetailing.up.railway.app>
+   CSRF_TRUSTED_ORIGINS=https://<samme domene>
+   SENDGRID_API_KEY=<SendGrid API-nøkkel, se E-post-seksjonen>
+   DEFAULT_FROM_EMAIL=Florø Detailing <den-verifiserte-adressen@gmail.com>
+   BUSINESS_NOTIFICATION_EMAIL=den-verifiserte-adressen@gmail.com
    ```
-   (`ALLOWED_HOSTS`/`CSRF_TRUSTED_ORIGINS` trenger dere **ikke** sette selv – appen leser
-   Railways `RAILWAY_PUBLIC_DOMAIN`-variabel automatisk.)
-5. Under **Settings → Networking**, trykk **Generate Domain** for å få en offentlig URL
-   (f.eks. `florodetailing.up.railway.app`). Redeploy trigges automatisk.
+   Sett `ALLOWED_HOSTS`/`CSRF_TRUSTED_ORIGINS` eksplisitt til det faktiske domenet – Railways
+   automatiske `RAILWAY_PUBLIC_DOMAIN`-variabel er ikke alltid tilgjengelig i kjøretidsmiljøet,
+   så det er tryggere å sette disse selv. Redeploy trigges automatisk når dere lagrer.
 6. Opprett en admin-bruker på den kjørende tjenesten: i Railway-dashbordet, åpne
    **web-tjenesten → ⋮ → Command Palette → Run command**, og kjør
    `python manage.py createsuperuser`.

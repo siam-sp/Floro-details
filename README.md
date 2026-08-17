@@ -161,6 +161,24 @@ Før dere går live (gjøres automatisk av `Procfile` på Railway): `python mana
 Etter dette redeployer Railway automatisk hver gang dere pusher til GitHub-branchen som er
 koblet opp.
 
+### Eget domene (Domeneshop)
+
+1. I Railway: web-tjenesten → **Settings → Networking → Custom Domain** – legg til både
+   `florodetailing.no` og `www.florodetailing.no`. Railway viser en CNAME-verdi for hver.
+2. I Domeneshop: **Mine tjenester → florodetailing.no → DNS-innstillinger**:
+   - `www`: legg til en **CNAME**-post som peker til CNAME-verdien fra Railway.
+   - Det bare domenet (`florodetailing.no` uten `www`) kan ikke ha en CNAME-post (DNS tillater
+     det ikke på apex-nivå) – bruk i stedet Domeneshops **Videresending**-funksjon til å
+     redirecte `florodetailing.no` → `https://www.florodetailing.no`.
+3. Oppdater `ALLOWED_HOSTS` og `CSRF_TRUSTED_ORIGINS` i Railway-variablene til å inkludere det
+   nye domenet:
+   ```
+   ALLOWED_HOSTS=florodetailing.no,www.florodetailing.no
+   CSRF_TRUSTED_ORIGINS=https://florodetailing.no,https://www.florodetailing.no
+   ```
+4. Vent på DNS-propagering (vanligvis minutter hos Domeneshop). Railway utsteder SSL-sertifikat
+   automatisk og viser grønn hake i Networking-fanen når domenet er live.
+
 ## Prosjektstruktur
 
 ```

@@ -47,7 +47,7 @@ def send_booking_confirmation_emails(booking):
         owner_message = (
             f"Ny booking bekreftet:\n\n"
             f"Kunde: {booking.customer_name}\n"
-            f"Telefon: {booking.customer_phone}\n"
+            f"Telefon: {booking.customer_phone or '-'}\n"
             f"E-post: {booking.customer_email}\n"
             f"Tjeneste: {booking.service.name}\n"
             f"Dato: {date_str} kl. {time_str}\n"

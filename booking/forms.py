@@ -40,7 +40,7 @@ class BookingForm(forms.ModelForm):
         }
         labels = {
             "customer_name": "Navn",
-            "customer_phone": "Telefon",
+            "customer_phone": "Telefon (valgfritt)",
             "customer_email": "E-post",
             "notes": "Merknad (valgfritt)",
         }

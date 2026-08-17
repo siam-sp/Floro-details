@@ -64,12 +64,11 @@ class BookingAdmin(admin.ModelAdmin):
         "customer_name",
         "service",
         "status",
-        "customer_phone",
         "created_at",
         "confirmation_link",
     )
     list_filter = ("status", "service", "date")
-    search_fields = ("customer_name", "customer_phone", "customer_email", "reference")
+    search_fields = ("customer_name", "customer_email", "reference")
     date_hierarchy = "date"
     readonly_fields = ("reference", "created_at", "updated_at")
     ordering = ("-date", "-start_time")

@@ -20,16 +20,12 @@ class BookingForm(forms.ModelForm):
             "date",
             "start_time",
             "customer_name",
-            "customer_phone",
             "customer_email",
             "notes",
         ]
         widgets = {
             "customer_name": forms.TextInput(
                 attrs={"class": "input", "placeholder": "Ola Nordmann", "autocomplete": "name"}
-            ),
-            "customer_phone": forms.TextInput(
-                attrs={"class": "input", "placeholder": "+47 123 45 678", "autocomplete": "tel"}
             ),
             "customer_email": forms.EmailInput(
                 attrs={"class": "input", "placeholder": "din@epost.no", "autocomplete": "email"}
@@ -40,7 +36,6 @@ class BookingForm(forms.ModelForm):
         }
         labels = {
             "customer_name": "Navn",
-            "customer_phone": "Telefon (valgfritt)",
             "customer_email": "E-post",
             "notes": "Merknad (valgfritt)",
         }

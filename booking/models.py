@@ -157,7 +157,6 @@ class Booking(models.Model):
     end_time = models.TimeField("Sluttid")
 
     customer_name = models.CharField("Navn", max_length=120)
-    customer_phone = models.CharField("Telefon", max_length=30, blank=True)
     customer_email = models.EmailField("E-post")
     notes = models.TextField("Merknad", blank=True)
 
